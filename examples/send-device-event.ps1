@@ -23,6 +23,6 @@ while ($true) {
         '$$MessageSchema' = 'Pi;v1'
         '$$ContentType' = 'JSON'
     }
-    Invoke-IoTDeviceEvent -Message ($telemetryDataPoint | ConvertTo-Json) -Properties $properties
+    Invoke-AzureIoTDeviceEvent -Message ($telemetryDataPoint | ConvertTo-Json) -Properties $properties
     Start-Sleep -s 5
 }

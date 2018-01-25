@@ -26,4 +26,4 @@ $reportedPropertiesObj = @{
         }
     }
 }
-Set-IoTDeviceReportedProperties -ReportedProperties $reportedPropertiesObj -DeviceClient $asdf
+Set-AzureIoTDeviceReportedProperties -ReportedProperties $reportedPropertiesObj -DeviceClient $asdf

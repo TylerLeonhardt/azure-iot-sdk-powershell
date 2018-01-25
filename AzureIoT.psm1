@@ -6,9 +6,23 @@ function Connect-AzureIoTDevice {
     Param(
         [Parameter(Mandatory=$true)]
         [string]
-        $ConnectionString
+        $ConnectionString,
+
+        [Parameter()]
+        [switch]
+        $Force
     )
-    $Script:DEVICE_CLIENT = [DeviceClient]::CreateFromConnectionString($ConnectionString, [TransportType]::Amqp)
+
+    if ((-not $Script:DEVICE_CLIENT) -or $Force) {
+        $Script:DEVICE_CLIENT = [DeviceClient]::CreateFromConnectionString($ConnectionString, [TransportType]::Amqp)
+    } else {
+        $PSCmdlet.WriteError((
+            New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList @(
+                [System.Exception]'Device Client already connected.'
+                $Null
+                [System.Management.Automation.ErrorCategory]::ResourceExists
+                "DeviceClient")))
+    }
     return $Script:DEVICE_CLIENT
 }
 
@@ -46,7 +60,7 @@ function Set-AzureIoTDeviceReportedProperties {
             Write-Verbose ('[{0}] Reached command' -f $MyInvocation.MyCommand)
             # Variable scope ensures that parent session remains unchanged
             $ConfirmPreference = 'None'
-            $reportedPropertiesJson = [Microsoft.Azure.Devices.Shared.TwinCollection]::new(($ReportedProperties | ConvertTo-Json))
+            $reportedPropertiesJson = [Microsoft.Azure.Devices.Shared.TwinCollection]::new(($ReportedProperties | ConvertTo-Json -Depth 100))
             $DeviceClient.UpdateReportedPropertiesAsync($reportedPropertiesJson).Wait()
         }
     }
