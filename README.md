@@ -10,7 +10,7 @@ To get started, simply import the psd1:
 Import-Module path/to/AzureIoT.psd1
 ```
 
-Connecting to AzureIoT:
+### Connecting to AzureIoT
 
 ```powershell
 # Configuration
@@ -21,7 +21,7 @@ $deviceKey = "<YOUR VALUE HERE>"
 Connect-IoTDevice -IoTHubUri $iotHubUri -deviceKey $deviceKey -deviceId "pi"
 ```
 
-Setting up the reported properties (the message configuration, basically) for the device:
+### Setting up the reported properties (the message configuration, basically) for the device
 
 ```powershell
 # Set up device configuration for our instance of Azure IoT
@@ -32,15 +32,61 @@ $reportedPropertiesObj = @{
 Set-IoTDeviceReportedProperties -ReportedProperties $reportedPropertiesObj
 ```
 
-Sending messages to Azure IoT:
+### Sending messages to Azure IoT
 
 ```powershell
 Invoke-IoTDeviceEvent -Message "Hello World"
 ```
 
+### Listening for direct method invoking
+
+better docs to come...
+
+```powershell
+Import-Module ./AzureIoT.psd1 -Force
+# Configuration
+$ConnectionString = "<secret>"
+
+# Returns the device client but internally saves the last device client used.
+$asdf = Connect-AzureIoTDevice -ConnectionString $ConnectionString
+
+# pass in module. Module needs to exist in PSModulePath or an absolute path must be supplied
+Set-AzureIoTDeviceDirectMethod -Module (Resolve-Path ./ExampleDirectMethodModule.psm1).Path
+```
+
+And then in your module:
+
+```powershell
+function Get-AzureIoTManifest {
+    return @{
+        hello = "Get-HelloWorld"
+        echo = "Get-Echo"
+    }
+}
+
+function Get-HelloWorld ($Request) {
+    return @{
+        Hello = "World"
+    }
+}
+
+function Get-Echo ($Request) {
+    return @{
+        Data = $Request
+    }
+}
+
+Export-ModuleMember -Function *-*
+```
+
+`Get-AzureIoTManifest` must be implemented and it must return a simple hash table in which the key is the method name and the value is the function you wish to run in this module when the method name is invoked.
+
+## Example
+
 Another example more so in the style of interacting with [Azure IoT Suite](https://azure.microsoft.com/en-us/suites/iot-suite/):
 
 Configuration:
+
 ```powershell
 # Set up device configuration for our instance of Azure IoT
 # This is a one time step
@@ -65,6 +111,7 @@ Set-IoTDeviceReportedProperties -ReportedProperties $reportedPropertiesObj
 ```
 
 Sending Events:
+
 ```powershell
 $telemetryDataPoint = @{
     Temperature = 50 # hard coded :)
