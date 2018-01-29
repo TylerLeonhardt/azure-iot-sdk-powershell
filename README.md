@@ -14,11 +14,10 @@ Import-Module path/to/AzureIoT.psd1
 
 ```powershell
 # Configuration
-$iotHubUri = "<YOUR VALUE HERE>.azure-devices.net"
-$deviceKey = "<YOUR VALUE HERE>"
+$DeviceConnectionString = ""
 
 # Returns nothing but sets up device client
-Connect-IoTDevice -IoTHubUri $iotHubUri -deviceKey $deviceKey -deviceId "pi"
+Connect-AzureIoTDevice -ConnectionString $DeviceConnectionString
 ```
 
 ### Setting up the reported properties (the message configuration, basically) for the device
@@ -40,21 +39,13 @@ Invoke-IoTDeviceEvent -Message "Hello World"
 
 ### Listening for direct method invoking
 
-better docs to come...
-
+In order to use DirectMethods in the PowerShell SDK, you can define a module with functions that will be run when a Direct Method is received. You'd set the module like so:
 ```powershell
-Import-Module ./AzureIoT.psd1 -Force
-# Configuration
-$ConnectionString = "<secret>"
-
-# Returns the device client but internally saves the last device client used.
-$asdf = Connect-AzureIoTDevice -ConnectionString $ConnectionString
-
 # pass in module. Module needs to exist in PSModulePath or an absolute path must be supplied
 Set-AzureIoTDeviceDirectMethod -Module (Resolve-Path ./ExampleDirectMethodModule.psm1).Path
 ```
 
-And then in your module:
+And then in your module define the functions:
 
 ```powershell
 function Get-AzureIoTManifest {
@@ -79,7 +70,7 @@ function Get-Echo ($Request) {
 Export-ModuleMember -Function *-*
 ```
 
-`Get-AzureIoTManifest` must be implemented and it must return a simple hash table in which the key is the method name and the value is the function you wish to run in this module when the method name is invoked.
+`Get-AzureIoTManifest` must be implemented in your module and it must return a simple hash table in which the key is the method name and the value is the function you wish to run in this module when the method name is invoked.
 
 ## Example
 
